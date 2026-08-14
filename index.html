@@ -1,0 +1,522 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DiagnoFlow | AI Health Assistant</title>
+    <!-- Fonts & Icons -->
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@300;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        /* Neuro-Inclusive Color Palette */
+        :root {
+            --teal: #008080;          /* Trust */
+            --soft-coral: #FF6F61;    /* Human Warmth / High Risk */
+            --sage-green: #9CAF88;    /* Positive / Stable */
+            --warm-sand: #F4E4D5;     /* Background - Low Eye Strain */
+            --muted-indigo: #4B5563;  /* Text */
+            --amber: #F59E0B;         /* Monitor / Caution */
+            --white: #FFFFFF;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Nunito', sans-serif;
+        }
+
+        body {
+            background-color: var(--warm-sand);
+            color: var(--muted-indigo);
+            height: 100vh;
+            display: flex;
+            overflow: hidden;
+            transition: box-shadow 1s ease;
+        }
+
+        /* Haptic Edge Glow (Triggered on High Risk) */
+        body.haptic-alert {
+            box-shadow: inset 0 0 80px rgba(255, 111, 97, 0.4);
+            animation: rhythmicGlow 2s infinite alternate;
+        }
+
+        @keyframes rhythmicGlow {
+            0% { box-shadow: inset 0 0 30px rgba(255, 111, 97, 0.2); }
+            100% { box-shadow: inset 0 0 100px rgba(255, 111, 97, 0.6); }
+        }
+
+        /* Sidebar & Geometric Lotus Logo */
+        aside {
+            width: 80px;
+            background: var(--white);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 30px 0;
+            border-right: 1px solid rgba(0,0,0,0.05);
+            z-index: 10;
+        }
+
+        .lotus-logo {
+            width: 40px;
+            height: 40px;
+            position: relative;
+            animation: activeListening 3s infinite ease-in-out;
+        }
+
+        /* Geometric Petals */
+        .petal {
+            position: absolute;
+            width: 20px;
+            height: 35px;
+            border-radius: 50% 50% 0 50%;
+            opacity: 0.8;
+            mix-blend-mode: multiply;
+        }
+        .p-left { background: var(--teal); transform: rotate(-30deg); left: 0; }
+        .p-right { background: var(--soft-coral); transform: rotate(30deg) scaleX(-1); right: 0; }
+        .p-center { background: var(--sage-green); left: 10px; top: -5px; z-index: 2; border-radius: 50%; width: 20px; height: 40px;}
+
+        @keyframes activeListening {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+        }
+
+        .side-icons {
+            margin-top: 50px;
+            display: flex;
+            flex-direction: column;
+            gap: 30px;
+            font-size: 20px;
+            color: var(--teal);
+            opacity: 0.6;
+        }
+
+        /* Main Dashboard Layout */
+        .dashboard {
+            flex: 1;
+            display: flex;
+            padding: 30px;
+            gap: 30px;
+        }
+
+        /* Left: Conversational Timeline */
+        .chat-section {
+            flex: 1.5;
+            background: rgba(255, 255, 255, 0.6);
+            backdrop-filter: blur(10px);
+            border-radius: 24px;
+            display: flex;
+            flex-direction: column;
+            padding: 25px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.02);
+            border: 1px solid rgba(255,255,255,0.5);
+        }
+
+        .chat-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 2px solid var(--warm-sand);
+            padding-bottom: 15px;
+            margin-bottom: 15px;
+        }
+        
+        .chat-header h2 { color: var(--teal); }
+
+        .chat-timeline {
+            flex: 1;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            padding-right: 10px;
+        }
+
+        .chat-timeline::-webkit-scrollbar { width: 5px; }
+        .chat-timeline::-webkit-scrollbar-thumb { background: var(--teal); border-radius: 10px; }
+
+        .msg {
+            max-width: 80%;
+            padding: 15px 20px;
+            border-radius: 18px;
+            font-size: 15px;
+            line-height: 1.5;
+            animation: slideIn 0.3s ease-out forwards;
+        }
+
+        .msg.bot {
+            background: var(--white);
+            color: var(--muted-indigo);
+            align-self: flex-start;
+            border-bottom-left-radius: 4px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.03);
+        }
+
+        .msg.user {
+            background: var(--teal);
+            color: var(--white);
+            align-self: flex-end;
+            border-bottom-right-radius: 4px;
+        }
+
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Breathing Input Field */
+        .input-area {
+            margin-top: 20px;
+            display: flex;
+            gap: 15px;
+            align-items: center;
+        }
+
+        .breathing-input {
+            flex: 1;
+            padding: 18px 25px;
+            border: none;
+            border-radius: 30px;
+            background: var(--white);
+            color: var(--muted-indigo);
+            font-size: 16px;
+            outline: none;
+            /* Breathing Animation */
+            animation: breathInput 4s infinite ease-in-out;
+            transition: all 0.3s;
+        }
+
+        .breathing-input:focus {
+            animation: none;
+            box-shadow: 0 0 20px rgba(0, 128, 128, 0.2);
+        }
+
+        @keyframes breathInput {
+            0%, 100% { box-shadow: 0 0 5px rgba(156, 175, 136, 0.2); }
+            50% { box-shadow: 0 0 25px rgba(156, 175, 136, 0.6); }
+        }
+
+        .icon-btn {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            border: none;
+            background: var(--teal);
+            color: var(--white);
+            font-size: 18px;
+            cursor: pointer;
+            transition: 0.3s;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        .icon-btn.mic { background: var(--soft-coral); }
+        .icon-btn:hover { transform: scale(1.05); }
+
+        /* Right: Predictive Dashboard */
+        .predictive-panel {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 25px;
+        }
+
+        /* 3D Health Orb */
+        .orb-card {
+            background: var(--white);
+            border-radius: 24px;
+            padding: 30px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.02);
+            text-align: center;
+        }
+
+        .health-orb {
+            width: 140px;
+            height: 140px;
+            border-radius: 50%;
+            /* Default Sage Green (Stable) */
+            background: radial-gradient(circle at 30% 30%, #e0f2cd, var(--sage-green));
+            box-shadow: inset -10px -10px 20px rgba(0,0,0,0.1), 0 15px 25px rgba(156, 175, 136, 0.4);
+            margin-bottom: 20px;
+            transition: all 1s ease;
+            animation: floatOrb 4s infinite ease-in-out;
+        }
+
+        /* Dynamic Orb States */
+        .orb-amber {
+            background: radial-gradient(circle at 30% 30%, #ffeaa7, var(--amber));
+            box-shadow: inset -10px -10px 20px rgba(0,0,0,0.1), 0 15px 25px rgba(245, 158, 11, 0.4);
+        }
+        .orb-red {
+            background: radial-gradient(circle at 30% 30%, #ff9a9e, var(--soft-coral));
+            box-shadow: inset -10px -10px 20px rgba(0,0,0,0.1), 0 15px 25px rgba(255, 111, 97, 0.4);
+        }
+
+        @keyframes floatOrb {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+
+        /* Confidence Flow Animation */
+        .flow-container {
+            width: 100%;
+            background: var(--warm-sand);
+            height: 60px;
+            border-radius: 30px;
+            margin-top: 20px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .flow-liquid {
+            position: absolute;
+            top: 0; left: 0; height: 100%;
+            width: 30%; /* Starts wide/uncertain */
+            background: linear-gradient(90deg, var(--teal), var(--sage-green));
+            border-radius: 30px;
+            transition: width 1.5s cubic-bezier(0.4, 0, 0.2, 1);
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            padding-right: 15px;
+            color: white;
+            font-weight: bold;
+            font-size: 12px;
+        }
+
+        /* Actionable Cards */
+        .actions-container {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .action-card {
+            background: var(--white);
+            padding: 20px;
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.02);
+            border-left: 4px solid var(--teal);
+            transform: translateX(50px);
+            opacity: 0;
+            transition: all 0.5s ease;
+            display: none;
+        }
+        
+        .action-card.visible {
+            transform: translateX(0);
+            opacity: 1;
+            display: flex;
+        }
+
+        .action-card i { font-size: 24px; color: var(--teal); }
+        .action-btn {
+            background: var(--warm-sand);
+            border: none;
+            padding: 8px 15px;
+            border-radius: 8px;
+            color: var(--teal);
+            font-weight: 700;
+            cursor: pointer;
+        }
+        .action-btn:hover { background: var(--teal); color: var(--white); }
+
+        /* Health Passport Btn */
+        .passport-btn {
+            margin-top: auto;
+            background: var(--teal);
+            color: var(--white);
+            border: none;
+            padding: 15px;
+            border-radius: 12px;
+            font-weight: bold;
+            cursor: pointer;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 10px;
+        }
+
+    </style>
+</head>
+<body>
+
+    <!-- Sidebar with Geometric Lotus -->
+    <aside>
+        <div class="lotus-logo">
+            <div class="petal p-left"></div>
+            <div class="petal p-right"></div>
+            <div class="petal p-center"></div>
+        </div>
+        <div class="side-icons">
+            <i class="fa-solid fa-house"></i>
+            <i class="fa-solid fa-notes-medical"></i>
+            <i class="fa-solid fa-clock-rotate-left"></i>
+            <i class="fa-solid fa-gear"></i>
+        </div>
+    </aside>
+
+    <!-- Main Content -->
+    <div class="dashboard">
+        
+        <!-- Conversational Interface -->
+        <div class="chat-section">
+            <div class="chat-header">
+                <h2><i class="fa-solid fa-wave-square"></i> Agentic Triage</h2>
+                <span style="font-size: 13px; color: var(--sage-green); background: #e0f2cd; padding: 4px 10px; border-radius: 12px;">
+                    <i class="fa-solid fa-lock"></i> HIPAA Compliant
+                </span>
+            </div>
+
+            <div class="chat-timeline" id="chatBox">
+                <div class="msg bot">
+                    Hello. I'm DiagnoFlow, your AI care assistant. I'm here to listen. How are you feeling today?
+                </div>
+            </div>
+
+            <div class="input-area">
+                <button class="icon-btn mic" title="Zero-UI Voice Mode"><i class="fa-solid fa-microphone"></i></button>
+                <input type="text" id="userInput" class="breathing-input" placeholder="Type your symptoms gently..." onkeypress="handleEnter(event)">
+                <button class="icon-btn" onclick="processInput()"><i class="fa-solid fa-paper-plane"></i></button>
+            </div>
+        </div>
+
+        <!-- Predictive Dashboard -->
+        <div class="predictive-panel">
+            
+            <div class="orb-card">
+                <div class="health-orb" id="orb"></div>
+                <h3 id="orbStatus" style="color: var(--sage-green);">Stable & Listening</h3>
+                <p style="font-size: 13px; color: var(--muted-indigo); margin-top: 5px;">Continuous Risk Assessment</p>
+                
+                <div style="text-align: left; width: 100%; margin-top: 20px;">
+                    <p style="font-size: 14px; font-weight: bold;">Diagnostic Confidence</p>
+                    <div class="flow-container">
+                        <div class="flow-liquid" id="confidenceFlow">30%</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="actions-container" id="actionCards">
+                <!-- Cards injected via JS -->
+            </div>
+
+            <button class="passport-btn" onclick="generatePassport()">
+                <i class="fa-solid fa-file-pdf"></i> Generate Health Passport
+            </button>
+        </div>
+    </div>
+
+    <script>
+        const chatBox = document.getElementById('chatBox');
+        const userInput = document.getElementById('userInput');
+        const orb = document.getElementById('orb');
+        const orbStatus = document.getElementById('orbStatus');
+        const confidenceFlow = document.getElementById('confidenceFlow');
+        const actionCards = document.getElementById('actionCards');
+        
+        let triageStep = 0;
+
+        function handleEnter(e) {
+            if (e.key === 'Enter') processInput();
+        }
+
+        function appendMessage(text, sender) {
+            const msgDiv = document.createElement('div');
+            msgDiv.className = `msg ${sender}`;
+            msgDiv.innerText = text;
+            chatBox.appendChild(msgDiv);
+            chatBox.scrollTop = chatBox.scrollHeight;
+        }
+
+        // Simulating Infermedica API NLP & Mayo Clinic logic
+        function processInput() {
+            const text = userInput.value.trim();
+            if(!text) return;
+
+            appendMessage(text, 'user');
+            userInput.value = '';
+
+            // Simulate AI Processing Delay
+            setTimeout(() => {
+                analyzeTriage(text);
+            }, 1000);
+        }
+
+        function analyzeTriage(userText) {
+            triageStep++;
+            let botReply = "";
+
+            if (triageStep === 1) {
+                // Emotion-Aware empathy response
+                botReply = "I understand you're uncomfortable, and I'm here to help. To narrow this down, does the pain radiate anywhere else, like your jaw or left arm?";
+                
+                // Update Orb & Confidence
+                orb.className = "health-orb orb-amber";
+                orbStatus.innerText = "Monitoring Risk";
+                orbStatus.style.color = "var(--amber)";
+                confidenceFlow.style.width = "65%";
+                confidenceFlow.innerText = "65%";
+                confidenceFlow.style.background = "linear-gradient(90deg, var(--amber), var(--teal))";
+                
+            } else if (triageStep === 2) {
+                botReply = "Thank you for sharing that. Are you also experiencing shortness of breath or dizziness?";
+                confidenceFlow.style.width = "80%";
+                confidenceFlow.innerText = "80%";
+            } else {
+                // Critical condition detected
+                botReply = "Based on your symptoms (radiating pain, shortness of breath), clinical data suggests a high risk of cardiac distress. Please do not wait. I have prepared immediate action steps for you on the right.";
+                
+                // Haptic Visuals & Red Orb
+                document.body.classList.add('haptic-alert');
+                orb.className = "health-orb orb-red";
+                orbStatus.innerText = "High Risk Detected";
+                orbStatus.style.color = "var(--soft-coral)";
+                
+                confidenceFlow.style.width = "98%";
+                confidenceFlow.innerText = "98%";
+                confidenceFlow.style.background = "linear-gradient(90deg, var(--soft-coral), var(--amber))";
+
+                // Trigger Next-Step Cards (Simulating Twilio/Booking integration)
+                showActionCards();
+            }
+
+            appendMessage(botReply, 'bot');
+        }
+
+        function showActionCards() {
+            actionCards.innerHTML = `
+                <div class="action-card visible" style="border-left-color: var(--soft-coral);">
+                    <div>
+                        <i class="fa-solid fa-truck-medical" style="color: var(--soft-coral);"></i>
+                        <h4 style="display:inline; margin-left: 10px;">Emergency Care</h4>
+                        <p style="font-size: 12px; margin-left: 35px; color: #888;">Visit nearest ER immediately</p>
+                    </div>
+                    <button class="action-btn" style="background: rgba(255,111,97,0.1); color: var(--soft-coral);">Call 911</button>
+                </div>
+                
+                <div class="action-card visible" style="transition-delay: 0.2s;">
+                    <div>
+                        <i class="fa-solid fa-video"></i>
+                        <h4 style="display:inline; margin-left: 10px;">Telehealth Consult</h4>
+                        <p style="font-size: 12px; margin-left: 35px; color: #888;">Connect with a cardiologist</p>
+                    </div>
+                    <button class="action-btn">Book Now</button>
+                </div>
+            `;
+        }
+
+        function generatePassport() {
+            alert("Health Passport Generated! A secure PDF containing your symptom timeline and AI risk assessment is ready to be shared with your doctor.");
+        }
+    </script>
+</body>
+</html>
